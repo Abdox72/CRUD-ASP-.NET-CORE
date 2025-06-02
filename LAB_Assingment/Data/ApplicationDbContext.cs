@@ -1,31 +1,26 @@
 ﻿using LAB_Assingment.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace LAB_Assingment.Data
 {
-    public static class ApplicationDbContext
+    public class ApplicationDbContext :DbContext
     {
-        public static List<Product> ProductsRepo = new List<Product>()
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    : base(options)
         {
-            new Product{
-                ID = 1,
-                Title = "Product 1",
-                Description = "Description for Product 1",
-                Price = 10.99M,
-            },
-            new Product{
-                ID = 2,
-                Title = "Product 2",
-                Description = "Description for Product 2",
-                Price = 20.99M,
-            },
-            new Product{
-                ID = 3,
-                Title = "Product 3",
-                Description = "Description for Product 3",
-                Price = 30.99M,
-            }
-        };
+        }
 
+        public DbSet<Product> Products { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+        }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+        }
 
     }
 }

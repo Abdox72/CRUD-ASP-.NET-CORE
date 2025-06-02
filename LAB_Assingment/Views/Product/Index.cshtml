@@ -1,16 +1,4 @@
 ﻿@model List<Product>
-@{
-    Layout = null;
-}
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <title>@ViewData["Title"]</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-</head>
-<body class="bg-light">
-
     <div class="container my-5">
         <h2 class="mb-4 text-center">@ViewData["Title"]</h2>
 
@@ -18,10 +6,10 @@
             <table class="table table-bordered table-hover align-middle text-center bg-white shadow">
                 <thead class="table-dark">
                     <tr>
-                        <th scope="col">Product ID</th>
-                        <th scope="col">Title</th>
-                        <th scope="col">Price</th>
-                        <th scope="col">Image</th>
+                        <th scope="col">@Html.DisplayNameFor(m=>m.First().ID)</th>
+                        <th scope="col">@Html.DisplayNameFor(m=>m.First().Title)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.First().Price)</th>
+                        <th scope="col">@Html.DisplayNameFor(m=>m.First().Image)</th>
                         <th scope="col">Action</th>
                     </tr>
                 </thead>
@@ -59,7 +47,3 @@
             </table>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>

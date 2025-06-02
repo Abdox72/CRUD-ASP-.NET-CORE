@@ -1,3 +1,6 @@
+using LAB_Assingment.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace LAB_Assingment
 {
     public class Program
@@ -8,7 +11,11 @@ namespace LAB_Assingment
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-
+            var connStr = builder.Configuration.GetConnectionString("Default");
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseSqlServer(connStr);
+            });
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -28,7 +35,7 @@ namespace LAB_Assingment
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Product}/{action=Index}/{id?}");
 
             app.Run();
         }

@@ -1,15 +1,22 @@
 ﻿using LAB_Assingment.Data;
+using LAB_Assingment.DTOs;
 using LAB_Assingment.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Data.Common;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace LAB_Assingment.Controllers
 {
     public class ProductController : Controller
     {
+        private ApplicationDbContext DbContext;
+        public ProductController(ApplicationDbContext _DbContext)
+        {
+            DbContext = _DbContext;
+        }
         public ViewResult Index()
         {
-            return View(Data.ApplicationDbContext.ProductsRepo);
+            return View(DbContext.Products.ToList());
         }
 
         [HttpGet]
@@ -18,21 +25,24 @@ namespace LAB_Assingment.Controllers
             return View();
         }
         [HttpPost]
-        public IActionResult Create(string Title, string Description, decimal Price, IFormFile Image )
+        public IActionResult Create(ProductDto _product)
         {
+            try
+            {
+
             Product product = new Product
             {
-                ID = Data.ApplicationDbContext.ProductsRepo.Count + 1, 
-                Title = Title,
-                Description = Description,
-                Price = Price,
+                ID = _product.ID, 
+                Title = _product.Title,
+                Description = _product.Description,
+                Price = _product.Price,
             };
-            if (Image != null && Image.Length > 0)
+            if (_product.Image != null && _product.Image.Length > 0)
             {
-                var filePath = Path.Combine("/images", Image.FileName);
+                var filePath = Path.Combine("/images", _product.Image.FileName);
                 using (var stream = new FileStream(Directory.GetCurrentDirectory() + "/wwwroot" + filePath, FileMode.Create))
                 {
-                    Image.CopyTo(stream);
+                    _product.Image.CopyTo(stream);
                 }
                 product.Image = filePath; 
             }
@@ -40,20 +50,35 @@ namespace LAB_Assingment.Controllers
             {
                 return BadRequest("Image file is required.");
             }
-            Data.ApplicationDbContext.ProductsRepo.Add(product);
+            DbContext.Products.Add(product);
+            DbContext.SaveChanges();
             return Redirect("/Product/Index");
+
+            }
+            catch(Exception ex)
+            {
+                return BadRequest("An error occurred while creating the product: " + ex.Message);
+            }
         }
 
-        public RedirectResult Delete(int id)
+        public IActionResult Delete(int id)
         {
-            Data.ApplicationDbContext.ProductsRepo.RemoveAll(p => p.ID == id);
-            return Redirect("/Product/Index");
+            try
+            {
+                DbContext.Products.Remove(DbContext.Products.Find(id));
+                DbContext.SaveChanges();
+                return Redirect("/Product/Index");
+            }
+            catch(Exception ex)
+            {
+                return BadRequest("An error occurred while Deleting the product: " + ex.Message);
+            }
         }
 
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            Product? product = ApplicationDbContext.ProductsRepo.FirstOrDefault(p => p.ID == id);
+            Product? product = DbContext.Products.FirstOrDefault(p => p.ID == id);
             if (product == null)
             {
                 return NotFound() ;
@@ -61,37 +86,41 @@ namespace LAB_Assingment.Controllers
             return View(product);
         }
         [HttpPost]
-        public IActionResult Edit(EditViewModel? _product)
+        public IActionResult Edit(ProductDto? _product)
         {
-            Product? product = ApplicationDbContext.ProductsRepo.FirstOrDefault(p => p.ID == _product?.ID);
-            if (product == null)
+            try
             {
-                return NotFound() ;
-            }
-            if (_product?.Image != null && _product.Image.Length > 0)
-            {
-                var filePath = Path.Combine("/images",_product.Image.FileName);
-                using (var stream = new FileStream(Directory.GetCurrentDirectory()+"/wwwroot"+filePath, FileMode.Create))
+                Product? product = DbContext.Products.FirstOrDefault(p => p.ID == _product.ID);
+                if (product == null)
                 {
-                    _product.Image.CopyTo(stream);
+                    return NotFound() ;
                 }
-                product.Image = filePath;
+                if (_product?.Image != null && _product.Image.Length > 0)
+                {
+                    var filePath = Path.Combine("/images",_product.Image.FileName);
+                    using (var stream = new FileStream(Directory.GetCurrentDirectory()+"/wwwroot"+filePath, FileMode.Create))
+                    {
+                        _product.Image.CopyTo(stream);
+                    }
+                    product.Image = filePath;
+                }
+                if (_product != null)
+                {
+                    product.Title = _product.Title;
+                    product.Description = _product.Description;
+                    product.Price = _product.Price;
+                }
+                else
+                {
+                    return BadRequest("Product data is invalid.");
+                }
+                DbContext.SaveChanges();
+                return Redirect("/Product/Index");
             }
-            else
+            catch(Exception ex)
             {
-                return BadRequest("Image file is required.");
+                return BadRequest("An error occurred while editing the product: " + ex.Message);
             }
-            if (_product != null)
-            {
-                product.Title = _product.Title;
-                product.Description = _product.Description;
-                product.Price = _product.Price;
-            }
-            else
-            {
-                return BadRequest("Product data is invalid.");
-            }
-            return Redirect("/Product/Index");
         }
     }
 }
